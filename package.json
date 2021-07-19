@@ -1,0 +1,7 @@
+{
+  "name": "@wcd/scottmcclung.lwc-robot-ui-examples",
+  "version": "0.0.0",
+  "scripts": {
+    "serve": "wcd-cli serve 2zwM3NVFRLDcnrhJkNqS --open"
+  }
+}

@@ -1,0 +1,44 @@
+<!-- Lead Form -->
+<template>
+  <div class="slds-card slds-p-around_medium slds-is-relative">
+    <div class="slds-text-heading_large">Submit Lead Form</div>
+    <p class="slds-p-top_small">An example of managing a form through multiple UI states using events rather than trying
+      to toggle boolean variables</p>
+    <div if:true={isBusy}>
+      <lightning-spinner alternative-text="Loading..."></lightning-spinner>
+    </div>
+    <c-form class="slds-p-top_medium" onsubmit={handleEvent} onsuccess={handleEvent}>
+      <div class="slds-form-element">
+        <label class="slds-form-element__label" for="FirstName">First Name</label>
+        <div class="slds-form-element__control">
+          <input class="slds-input" type="text" name="FirstName" id="FirstName" onchange={handleEvent}></input>
+        </div>
+      </div>
+      <div class="slds-form-element">
+        <label class="slds-form-element__label" for="LastName">Last Name</label>
+        <div class="slds-form-element__control">
+          <input class="slds-input" type="text" name="LastName" id="LastName" onchange={handleEvent}></input>
+        </div>
+      </div>
+      <div class="slds-form-element">
+        <label class="slds-form-element__label" for="Email">Email</label>
+        <div class="slds-form-element__control">
+          <input class="slds-input" type="text" name="Email" id="Email" onchange={handleEvent}></input>
+        </div>
+      </div>
+      <div class="slds-form-element">
+        <label class="slds-form-element__label" for="Company">Company</label>
+        <div class="slds-form-element__control">
+          <input class="slds-input" type="text" name="Company" id="Company" onchange={handleEvent}></input>
+        </div>
+      </div>
+      <div class="slds-m-top_small">
+        <lightning-button variant="brand" type="submit" name="submit" label="Submit" disabled={isNotDirty}>Submit
+        </lightning-button>
+      </div>
+    </c-form>
+    <div class="slds-p-top_large slds-text-heading_small">
+      Current state: {state.name}
+    </div>
+  </div>
+</template>

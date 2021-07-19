@@ -1,0 +1,29 @@
+<template>
+  <div class="slds-card slds-p-around_medium">
+    <div class="slds-text-heading_large">Mutliple Toggles Form</div>
+    <p class="slds-p-top_small">An simple example of using events to toggle multiple active/inactive UI states with
+      multiple machines.</p>
+    <div class="slds-text-heading_medium slds-p-top_medium">
+      Toggle form #1
+    </div>
+    <div class="slds-p-top_medium">
+      <div class="slds-text-color_success" if:true={isToggle1Active}>Active</div>
+      <div class="slds-text-color_default" if:false={isToggle1Active}>Not Active</div>
+    </div>
+    <div class="slds-p-top_medium">
+      <button if:true={isToggle1Active} class="slds-button slds-button_neutral" onclick={handleClick} name="button1">Click to toggle Off</button>
+      <button if:false={isToggle1Active} class="slds-button slds-button_brand" onclick={handleClick} name="button1">Click to toggle On</button>
+    </div>
+    <div class="slds-text-heading_medium slds-p-top_medium">
+      Toggle form #2
+    </div>
+    <div class="slds-p-top_medium">
+      <div class="slds-text-color_success" if:true={isToggle2Active}>Active</div>
+      <div class="slds-text-color_default" if:false={isToggle2Active}>Not Active</div>
+    </div>
+    <div class="slds-p-top_medium">
+      <button if:true={isToggle2Active} class="slds-button slds-button_neutral" onclick={handleClick} name="button2">Click to toggle Off</button>
+      <button if:false={isToggle2Active} class="slds-button slds-button_brand" onclick={handleClick} name="button2">Click to toggle On</button>
+    </div>
+  </div>
+</template>
