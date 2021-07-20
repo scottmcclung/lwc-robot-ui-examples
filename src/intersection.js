@@ -5,22 +5,20 @@ import {createMachine, useMachine, state, transition, action, invoke} from './ro
 const {current, send} = useMachine(createMachine({
     green: state(
         transition('next', 'yellow', action(() => {
-            console.log('transition to yellow')
-            setInterval(() => {
-                send('next')
-            }, 500);
+            console.log('transition to red')
+            setInterval(() => send('next'), 5000)
         }))
     ),
     yellow: state(
         transition('next', 'red', action(() => {
             console.log('transition to red')
-            setInterval(() => send('next'), 50)
+            setInterval(() => send('next'), 1000)
         }))
     ),
     red: state(
         transition('next', 'green', action(() => {
             console.log('transition to green')
-            setInterval(() => send('next'), 600)
+            setInterval(() => send('next'), 6000)
         }))
     )
 }));
