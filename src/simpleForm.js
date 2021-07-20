@@ -1,15 +1,42 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, useMachine, state, transition, action} from './robot';
+import {createMachine, useMachine, state, transition, action, reduce, guard} from './robot';
+
+const initialContext = () => ({
+    fields: {},
+    errors: {}
+})
 
 
-const submit = (context, {target}) => {
-  console.log('submit event:', target);
-  // target.submit();  // calling the sumbit method on the lightning-form component
-  target.dispatchEvent(new CustomEvent('success'));  // normally this would be fired by the lightning-form component
+const storeValue = (context, {target}) => {
+    return { 
+        ...context, 
+        fields: {
+            ...context.fields,
+            [target.name]: target.value
+        } 
+     }
 }
 
 
-const resetForm = (context, {target}) => target.reset();
+const validateForm = (context) => {
+    context.errors = {};
+    if(!context.fields.LastName || !context.fields.LastName.trim()) {
+        context.errors.LastName = 'Last Name is required.';
+    }
+    return Object.keys(context.errors).length === 0;
+}
+
+
+const submit = (context, {target}) => {
+    target.submit(context.fields);
+}
+
+
+const resetForm = (context, {target}) => {
+    target.reset();
+    context.fields = {};
+    context.errors = {};
+}
 
 
 const formMachine = {
@@ -17,10 +44,11 @@ const formMachine = {
         transition('rendered', 'idle')
     ),
     idle: state(
-        transition('change', 'dirty')
+        transition('change', 'dirty', reduce(storeValue))
     ),
     dirty: state(
-        transition('submit', 'submitting', action(submit))
+        transition('change', 'dirty', reduce(storeValue)),
+        transition('submit', 'submitting', guard(validateForm), action(submit))
     ),
     submitting: state(
         transition('success', 'idle', action(resetForm)),
@@ -29,7 +57,7 @@ const formMachine = {
 }
 
 
-const {current, send} = useMachine(createMachine(formMachine));
+const {current, send} = useMachine(createMachine(formMachine, initialContext));
 
 
 export default class SimpleForm extends LightningElement {
@@ -47,8 +75,25 @@ export default class SimpleForm extends LightningElement {
         return !this.state.matches('dirty');
     }
 
+    get errors() {
+        return this.state.context.errors || {};
+    }
+
+    get fields() {
+        return this.state.context.fields || {};
+    }
+
+    get currentContext() {
+        return JSON.stringify(this.state.context);
+    }
+
+    get lastNameInputClasses() {
+        return `slds-form-element ${this.errors.LastName ? "slds-has-error" : ""}`;
+    }
+
     handleEvent(e) {
         e.preventDefault();
+        e.stopPropagation();
         send(e);
     }
 
