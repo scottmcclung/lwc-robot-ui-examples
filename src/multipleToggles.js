@@ -1,5 +1,5 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, useMachine, state, transition} from './robot';
+import {createMachine, createCurrent, interpret, state, transition} from './robot';
 
 
 const toggleMachine = {
@@ -10,37 +10,38 @@ const toggleMachine = {
         transition('click', 'inactive')
     )
 };
-const toggle1 = useMachine(createMachine(toggleMachine));
-const toggle2 = useMachine(createMachine(toggleMachine));
+const machine1 = createMachine(toggleMachine);
+const machine2 = createMachine(toggleMachine);
 
 
 export default class MultipleToggles extends LightningElement {
-    @track state = {
-        toggle1: toggle1.current,
-        toggle2: toggle2.current
-    }
+    @track toggle1 = {}
+    @track toggle2 = {}
+
 
     get isToggle1Active() {
-        return this.state.toggle1.matches('active');
+        return this.toggle1.matches('active');
     }
 
     get isToggle2Active() {
-        return this.state.toggle2.matches('active');
+        return this.toggle2.matches('active');
     }
 
     handleClick = e => {
       const name = e.target.name;
-      if(name === 'button1') toggle1.send(e);
-      if(name === 'button2') toggle2.send(e);
-    }
-
-    handleStateChange = machine => {
-        return currentState => this.state[machine] = currentState;
+      if(name === 'button1') this.toggle1.send(e);
+      if(name === 'button2') this.toggle2.send(e);
     }
 
     constructor() {
         super();
-        toggle1.current.subscribe(this.handleStateChange('toggle1'));
-        toggle2.current.subscribe(this.handleStateChange('toggle2'));
+        this.toggle1Service = interpret(machine1, service => {
+            this.toggle1 = createCurrent(service);
+        });
+        this.toggle2Service = interpret(machine2, service => {
+            this.toggle2 = createCurrent(service);
+        });
+        this.toggle1 = createCurrent(this.toggle1Service);
+        this.toggle2 = createCurrent(this.toggle2Service);
     }
 }

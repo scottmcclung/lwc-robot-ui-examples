@@ -1,4 +1,15 @@
-import { createMachine, interpret, state, transition, invoke, action, guard, reduce } from 'robot3';
+import { 
+    guard, 
+    state, 
+    action, 
+    invoke, 
+    reduce,
+    interpret, 
+    transition, 
+    createMachine
+} from 'robot3';
+
+
 const { create, freeze } = Object;
 
 
@@ -7,64 +18,42 @@ const valueEnumerable = value => {
 }
 
 
+const activeService = service => {
+    if(service.child) return activeService(service.child);
+    return service;
+}
+
+
 const createMatcher = value => {
   return (stateValue) => value === stateValue;
 }
 
 
-
-const subscribe = service => {
-    return (callback) => {
-        if(!service.hasOwnProperty('subscriptions')) {
-            service.subscriptions = new Set();
-        }
-        service.subscriptions.add(callback);
-    }
-}
-
-
-const unsubscribe = service => {
-    return (callback) => {
-        if(!service.hasOwnProperty('subscriptions')) return;
-        service.subscriptions.delete(callback);
-    }
-}
-
-
-const unsubscribeAll = service => {
-    return (callback) => {
-        if(!service.hasOwnProperty('subscriptions')) return;
-        service.subscriptions.clear();
-    }
-}
-
-
 const createCurrent = service => {
-    return freeze(create(service.machine.state, {
-        context: valueEnumerable(service.context),
-        service: valueEnumerable(service),
-        matches: valueEnumerable(createMatcher(service.machine.state.name)),
-        subscribe: valueEnumerable(subscribe(service))
+    const active = activeService(service);
+    return freeze(create(active.machine.state, {
+        context: valueEnumerable(active.context),
+        matches: valueEnumerable(createMatcher(active.machine.state.name)),
+        send: valueEnumerable(active.send)
     }));
 }
 
 
-const useMachine = (machine, initialContext) => {
-    const service = interpret(machine, service => {
-        const current = createCurrent(service.child || service);
-        if(service.subscriptions) {
-            service.subscriptions.forEach(callback => callback.call(null,current));
-        }
-    }, initialContext);
-    
-    const current = createCurrent(service);
-    
-    return {
-        current, 
-        send: service.send, 
-        service
-    };
+// A helper function for more easily building nested state machines.
+const nested = (to, states, ctx) => {
+    return invoke(createMachine(states, ctx), transition('done', to));
 }
 
 
-export {createMachine, state, transition, invoke, action, guard, reduce, useMachine}
+export {
+    guard, 
+    state, 
+    action, 
+    invoke, 
+    nested,
+    reduce, 
+    interpret, 
+    transition, 
+    createCurrent,
+    createMachine
+}

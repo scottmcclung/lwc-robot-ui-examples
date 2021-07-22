@@ -1,50 +1,69 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, useMachine, state, transition, action, invoke} from './robot';
+import {createMachine, interpret, state, state as final, transition, invoke, createCurrent} from './robot';
 
 
-const {current, send} = useMachine(createMachine({
+// A helper function for more easily building nested state machines.
+const nested = (to, states, ctx) => {
+    return invoke(createMachine(states, ctx), transition('done', to));
+}
+
+const DATA = () => ({
+    one: "the first value",
+    two: "the second value"
+})
+
+
+const crosswalkMachine = createMachine({
+    walk: state(
+        transition('click', 'dontWalk')
+    ),
+    dontWalk: final()
+});
+
+
+const stoplightMachine = createMachine({
     green: state(
-        transition('next', 'yellow', action(() => {
-            console.log('transition to red')
-            setInterval(() => send('next'), 5000)
-        }))
+        transition('click', 'yellow')
     ),
     yellow: state(
-        transition('next', 'red', action(() => {
-            console.log('transition to red')
-            setInterval(() => send('next'), 1000)
-        }))
+        transition('click', 'red')
     ),
-    red: state(
-        transition('next', 'green', action(() => {
-            console.log('transition to green')
-            setInterval(() => send('next'), 6000)
-        }))
-    )
-}));
+    red: nested('green', {
+        walk: state(
+            transition('click', 'dontWalk')
+        ),
+        dontWalk: final()
+    })
+}, DATA);
 
 
 export default class Intersection extends LightningElement {
-    @track state = current;
+    @track currentState = {};
 
-    get isActive() {
-        return this.state.matches('active');
-    }
 
-    get crosswalkState() {
-        return "walk";
+    get stoplight() {
+        return this.service && this.service.machine.current;
     }
 
 
-    get stoplightState() {
-        return this.state.name;
+    get crosswalk() {
+        return (this.service && this.service.child && this.service.child.machine.current) || "dont walk";
     }
 
-    handleNext = e => send(e);
+
+    get name() {
+        return this.currentState.name;
+    }
+
+
+    handleClick = e => this.currentState.send(e)
+
 
     constructor() {
         super();
-        current.subscribe(currentState => this.state = currentState);
-        send('next');
+        this.service = interpret(stoplightMachine, service => {
+            this.currentState = createCurrent(service);
+        });
+        this.currentState = createCurrent(this.service);
     }
 }
