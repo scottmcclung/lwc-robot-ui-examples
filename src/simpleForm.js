@@ -1,5 +1,12 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, createCurrent, interpret, state, transition, action} from './robot';
+import { 
+    state, 
+    action,
+    interpret, 
+    transition, 
+    createMachine
+} from 'robot3';
+import {createCurrent} from './robot';
 
 
 const submit = (context, {target}) => {

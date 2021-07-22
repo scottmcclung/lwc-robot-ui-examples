@@ -1,10 +1,5 @@
 import { 
-    guard, 
-    state, 
-    action, 
     invoke, 
-    reduce,
-    interpret, 
     transition, 
     createMachine
 } from 'robot3';
@@ -38,7 +33,6 @@ const createCurrent = service => {
     }));
 }
 
-
 // A helper function for more easily building nested state machines.
 const nested = (to, states, ctx) => {
     return invoke(createMachine(states, ctx), transition('done', to));
@@ -46,14 +40,6 @@ const nested = (to, states, ctx) => {
 
 
 export {
-    guard, 
-    state, 
-    action, 
-    invoke, 
     nested,
-    reduce, 
-    interpret, 
-    transition, 
-    createCurrent,
-    createMachine
+    createCurrent
 }

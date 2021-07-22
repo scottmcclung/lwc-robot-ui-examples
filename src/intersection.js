@@ -1,11 +1,13 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, interpret, state, state as final, transition, invoke, createCurrent} from './robot';
+import { 
+    state, 
+    state as final,
+    interpret, 
+    transition, 
+    createMachine
+} from 'robot3';
+import {createCurrent, nested} from './robot';
 
-
-// A helper function for more easily building nested state machines.
-const nested = (to, states, ctx) => {
-    return invoke(createMachine(states, ctx), transition('done', to));
-}
 
 const DATA = () => ({
     one: "the first value",

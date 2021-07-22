@@ -1,5 +1,11 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, createCurrent, interpret, state, transition} from './robot';
+import { 
+    state, 
+    interpret, 
+    transition, 
+    createMachine
+} from 'robot3';
+import {createCurrent} from './robot';
 
 
 const machine = createMachine({
