@@ -1,22 +1,28 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, useMachine, state, transition} from './robot';
+import { 
+    state, 
+    interpret, 
+    transition, 
+    createMachine
+} from 'robot3';
+import {createCurrent} from './robot';
 
 
-const {current, send} = useMachine(createMachine({
+const machine = createMachine({
     inactive: state(
         transition('click', 'active')
     ),
     active: state(
         transition('click', 'inactive')
     )
-}));
+});
 
 
 export default class Toggle extends LightningElement {
-    @track state = current;
+    @track currentState = {};
 
     get isActive() {
-        return this.state.matches('active');
+        return this.currentState.matches('active');
     }
 
     get buttonText() {
@@ -27,10 +33,13 @@ export default class Toggle extends LightningElement {
       return `slds-button slds-button_${this.isActive ? 'neutral' : 'brand'}`
     }
 
-    handleClick = e => send(e);
+    handleClick = e => this.currentState.send(e);
 
     constructor() {
         super();
-        current.subscribe(currentState => this.state = currentState);
+        this.service = interpret(machine, service => {
+            this.currentState = createCurrent(service);
+        });
+        this.currentState = createCurrent(this.service);
     }
 }

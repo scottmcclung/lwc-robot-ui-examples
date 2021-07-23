@@ -1,0 +1,17 @@
+<template>
+  <div class="slds-card slds-p-around_medium">
+    <div class="slds-text-heading_large">Intersection</div>
+    <p class="slds-p-top_small">An example of using nested machines to manage a simple intersection state.</p>
+
+    <p>When the stop light is red, the crosswalk says walk</p>
+
+    <div class="slds-p-top_medium">
+      <div>Stop light - <span data-state={stoplight}>{stoplight}</span></div>
+      <div>Crosswalk - <span data-state={crosswalk}>{crosswalk}</span></div>
+    </div>
+    <div class="slds-p-top_medium">
+      <button class="slds-button slds-button_brand" onclick={handleClick}>Next</button>
+    </div>
+    <div class="slds-hidden">{name}</div> <!-- required for reactivity -->
+  </div>
+</template>
