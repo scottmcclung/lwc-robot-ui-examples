@@ -1,5 +1,12 @@
 import {LightningElement, track} from 'lwc';
-import {createMachine, useMachine, state, transition, action} from './robot';
+import { 
+    state, 
+    action,
+    interpret, 
+    transition, 
+    createMachine
+} from 'robot3';
+import {createCurrent} from './robot';
 
 
 const submit = (context, {target}) => {
@@ -12,7 +19,7 @@ const submit = (context, {target}) => {
 const resetForm = (context, {target}) => target.reset();
 
 
-const formMachine = {
+const machine = createMachine({
     rendering: state(
         transition('rendered', 'idle')
     ),
@@ -26,38 +33,52 @@ const formMachine = {
         transition('success', 'idle', action(resetForm)),
         transition('error', 'dirty')
     )
-}
-
-
-const {current, send} = useMachine(createMachine(formMachine));
+});
 
 
 export default class SimpleForm extends LightningElement {
-    @track state = current;
+    @track _currentState = {};
 
+    get state() {
+      return this._currentState.name || "";
+    }
+    set state(value = {}) {
+      this._currentState = value;
+      ({
+        constext: this.context,
+        matches: this.matches,
+        send: this.send
+      } = this._currentState);
+    }
+    
+    
     get hasRendered() {
-        return !this.state.matches('rendering');
+        return !this.matches('rendering');
     }
 
     get isBusy() {
-        return ['rendering', 'submitting'].some(this.state.matches);
+        return ['rendering', 'submitting'].some(this.matches);
     }
 
     get isNotDirty() {
-        return !this.state.matches('dirty');
+        return !this.matches('dirty');
     }
 
     handleEvent(e) {
         e.preventDefault();
-        send(e);
+        this.send(e);
     }
 
-    connectedCallback() {
-        current.subscribe(currentState => this.state = currentState);
+    constructor() {
+        super();
+        this.service = interpret(machine, service => {
+            this.state = createCurrent(service);
+        });
+        this.state = createCurrent(this.service);
     }
 
     renderedCallback() {
         if (this.hasRendered) return;
-        send(new CustomEvent('rendered'));
+        this.send(new CustomEvent('rendered'));
     }
 }
