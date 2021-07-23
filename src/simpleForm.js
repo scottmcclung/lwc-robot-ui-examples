@@ -1,4 +1,5 @@
 import {LightningElement, track} from 'lwc';
+
 import { 
     state, 
     action,
@@ -8,15 +9,42 @@ import {
 } from 'robot3';
 import {createCurrent} from './robot';
 
+const initialContext = () => ({
+    fields: {},
+    errors: {}
+})
 
-const submit = (context, {target}) => {
-  console.log('submit event:', target);
-  // target.submit();  // calling the sumbit method on the lightning-form component
-  target.dispatchEvent(new CustomEvent('success'));  // normally this would be fired by the lightning-form component
+
+const storeValue = (context, {target}) => {
+    return { 
+        ...context, 
+        fields: {
+            ...context.fields,
+            [target.name]: target.value
+        } 
+     }
 }
 
 
-const resetForm = (context, {target}) => target.reset();
+const validateForm = (context) => {
+    context.errors = {};
+    if(!context.fields.LastName || !context.fields.LastName.trim()) {
+        context.errors.LastName = 'Last Name is required.';
+    }
+    return Object.keys(context.errors).length === 0;
+}
+
+
+const submit = (context, {target}) => {
+    target.submit(context.fields);
+}
+
+
+const resetForm = (context, {target}) => {
+    target.reset();
+    context.fields = {};
+    context.errors = {};
+}
 
 
 const machine = createMachine({
@@ -24,17 +52,19 @@ const machine = createMachine({
         transition('rendered', 'idle')
     ),
     idle: state(
-        transition('change', 'dirty')
+        transition('change', 'dirty', reduce(storeValue))
     ),
     dirty: state(
-        transition('submit', 'submitting', action(submit))
+        transition('change', 'dirty', reduce(storeValue)),
+        transition('submit', 'submitting', guard(validateForm), action(submit))
     ),
     submitting: state(
         transition('success', 'idle', action(resetForm)),
         transition('error', 'dirty')
     )
-});
+)}
 
+  
 
 export default class SimpleForm extends LightningElement {
     @track _currentState = {};
@@ -45,7 +75,7 @@ export default class SimpleForm extends LightningElement {
     set state(value = {}) {
       this._currentState = value;
       ({
-        constext: this.context,
+        context: this.context,
         matches: this.matches,
         send: this.send
       } = this._currentState);
@@ -64,8 +94,25 @@ export default class SimpleForm extends LightningElement {
         return !this.matches('dirty');
     }
 
+    get errors() {
+        return this.context.errors || {};
+    }
+
+    get fields() {
+        return this.context.fields || {};
+    }
+
+    get currentContext() {
+        return JSON.stringify(this.context);
+    }
+
+    get lastNameInputClasses() {
+        return `slds-form-element ${this.errors.LastName ? "slds-has-error" : ""}`;
+    }
+
     handleEvent(e) {
         e.preventDefault();
+        e.stopPropagation();
         this.send(e);
     }
 

@@ -14,11 +14,14 @@
           <input class="slds-input" type="text" name="FirstName" id="FirstName" onchange={handleEvent}></input>
         </div>
       </div>
-      <div class="slds-form-element">
-        <label class="slds-form-element__label" for="LastName">Last Name</label>
+      <div class={lastNameInputClasses}>
+        <label class="slds-form-element__label" for="LastName">
+          <abbr class="slds-required" title="required">*</abbr>Last Name    &#60;-- Example validation requires Last Name to have a value
+        </label>
         <div class="slds-form-element__control">
           <input class="slds-input" type="text" name="LastName" id="LastName" onchange={handleEvent}></input>
         </div>
+        <div if:true={errors.LastName} class="slds-form-element__help">{errors.LastName}</div>
       </div>
       <div class="slds-form-element">
         <label class="slds-form-element__label" for="Email">Email</label>
