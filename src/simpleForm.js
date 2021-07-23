@@ -1,8 +1,10 @@
 import {LightningElement, track} from 'lwc';
 
 import { 
+    guard,
     state, 
     action,
+    reduce,
     interpret, 
     transition, 
     createMachine
@@ -62,7 +64,7 @@ const machine = createMachine({
         transition('success', 'idle', action(resetForm)),
         transition('error', 'dirty')
     )
-)}
+})
 
   
 
